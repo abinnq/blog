@@ -3,6 +3,12 @@
   2. [函数](#函数)
   3. [对象和数据结构](#对象和数据结构)
   4. [类](类)
+  5. [SOLID](SOLID)
+  6. [测试](测试)
+  7. [异步](异步)
+  8. [代码风格](代码风格)
+  9. [注释](注释)
+  10. [ref](ref)
 
 ## 变量
 
@@ -751,4 +757,944 @@ console.log(`Employee name: ${employee.getName()}`); // Employee name: John Doe
 ```
 
 ### 类
+在 ES2015/ES6 之前，没有类的语法，只能用构造函数的方式模拟类，可读性非常差。
+**Bad:**
+```javascript
+const Animal = function(age) {
+  if(!(this instanceof Animal)) {
+    throw new Error('Instantiate Animal with `new`');
+  }
+  this.age = age;
+};
+Animal.prototype.move = function move() {};
+const Mammal = function(age, furColor) {
+  if(!this instanceof Mammal)) {
+    throw new Error('Instantiate Mammal with `new`');
+  }
+  Animal.call(this, age);
+  this.furColor = furColor;
+};
+Mammal.prototype = Object.create(Animal.prototype);
+Mammal.prototype.constructor = Mammal;
+Mammal.prototype.liveBirth = function liveBirth() {};
 
+const Human = function(age, furColor, languageSpoken) {
+  if (!(this instanceof Human)) {
+    throw new Error('Instantiate Human with `new`');
+  }
+
+  Mammal.call(this, age, furColor);
+  this.languageSpoken = languageSpoken;
+};
+
+Human.prototype = Object.create(Mammal.prototype);
+Human.prototype.constructor = Human;
+Human.prototype.speak = function speak() {};
+```
+
+**Good:**
+```javascript
+class Animal {
+  constructor(age) {
+    this.age = age;
+  }
+  move() { /* ... */};
+}
+class Mammal extends Animal {
+  constructor(age, furColor) {
+    super(age);
+    this.furColor = furColor;
+  }
+  liveBirth() {/* ... */};
+}
+class Human extends Mammal {
+  constructor(age, furColor, languageSpoken) {
+    super(age, furColor);
+    this.languageSpoken = languageSpoken;
+  }
+  speak() { /* ... */ }
+}
+```
+
+### 链式调用
+在JQuery、Lodash中常见。在类的方法最后返回this。
+**Bad:**
+```javascript
+class Car {
+  constructor(make, model, color) {
+    this.make = make;
+    this.model = model;
+    this.color = color;
+  }
+
+  setMake(make) {
+    this.make = make;
+  }
+
+  setModel(model) {
+    this.model = model;
+  }
+
+  setColor(color) {
+    this.color = color;
+  }
+
+  save() {
+    console.log(this.make, this.model, this.color);
+  }
+}
+
+const car = new Car('Ford','F-150','red');
+car.setColor('pink');
+car.save();
+```
+
+**Good:**
+```javascript
+class Car {
+  constructor(make, model, color) {
+    this.make = make;
+    this.model = model;
+    this.color = color;
+  }
+
+  setMake(make) {
+    this.make = make;
+    return this;
+  }
+
+  setModel(model) {
+    this.model = model;
+    return this;
+  }
+
+  setColor(color) {
+    this.color = color;
+    return this;
+  }
+
+  save() {
+    console.log(this.make, this.model, this.color);
+    return this;
+  }
+}
+
+const car = new Car('Ford','F-150','red');
+car.setColor('pink');
+car.save();
+```
+
+### 不要滥用继承
+很多时候继承被滥用，导致可读性极差
+继承表达的是属于关系 并非包含关系
+**Bad:**
+```javascript
+class Employee {
+  constructor(name, email) {
+    this.name = name;
+    this.email = email;
+  }
+  // ...
+}
+class EmployeeTaxData extends Employee {
+  constructor(san, salary) {
+    super();
+    this.san = san;
+    this.salary = salary;
+  }
+  // ...
+}
+```
+
+**Good:**
+```javascript
+class EmployeeTaxData {
+  constructor(ssn, salary) {
+    this.ssn = ssn;
+    this.salary = salary;
+  }
+
+  // ...
+}
+
+class Employee {
+  constructor(name, email) {
+    this.name = name;
+    this.email = email;
+  }
+
+  setTaxData(ssn, salary) {
+    this.taxData = new EmployeeTaxData(ssn, salary);
+  }
+  // ...
+}
+```
+
+## SOLID
+SOLID 是几个单词首字母组合而来，分别表示
+单一功能原则、开闭原则、里氏替换原则、接口隔离原则以及依赖反转原则。
+
+### 单一功能原则
+```javascript
+class UserSettings {
+  constructor(user) {
+    this.user = user;
+  }
+
+  changSettings(settings) {
+    if (this.verifyCredentials()) {
+      // ...
+    }
+  }
+  verifyCredentials() {
+    // ...
+  }
+}
+```
+
+**Good:**
+```javascript
+class UserAuth {
+  constructor(user) {
+    this.user = user;
+  }
+  verifyCreadentials() {
+    // ...
+  }
+}
+
+class UserSettings {
+  constructor(user) {
+    this.user = user;
+    this.auth = new UserAuth(user);
+  }
+
+  changeSettings(settings) {
+    if (this.auth.verifyCredentials()) {
+      // ...
+    }
+  }
+}
+```
+
+### 开闭原则
+“开”指的就是类、模块、函数都应该具有可扩展性，
+“闭”指的是它们不应该被修改。也就是说你可以新增功能但不能去修改源码。
+**Bad:**
+```javascript
+class AjaxAdapter extends Adapter {
+  constructor() {
+    super();
+    this.name = 'ajaxAdapter';
+  }
+}
+
+class NodeAdapter extends Adapter {
+  constructor() {
+    super();
+    this.name = 'nodeAdapter';
+  }
+}
+
+class HttpRequester {
+  constructor(adapter) {
+    this.adapter = adapter;
+  }
+
+  fetch(url) {
+    if (this.adapter.name === 'ajaxAdapter') {
+      return makeAjaxCall(url).then((response) => {
+        // transform response and return
+      });
+    } else if (this.adapter.name === 'nodeAdapter') {
+      return makeHttpCall(url).then((response) => {
+        // transform response and return
+      });
+    }
+  }
+}
+
+function makeAjaxCall(url) {
+  // request and return promise
+}
+
+function makeHttpCall(url) {
+  // request and return promise
+}
+```
+
+**Good:**
+```javascript
+class AjaxAdapter extends Adapter {
+  constructor() {
+    super();
+    this.name = 'ajaxAdapter';
+  }
+
+  request(url) {
+    // request and return promise
+  }
+}
+
+class NodeAdapter extends Adapter {
+  constructor() {
+    super();
+    this.name = 'nodeAdapter';
+  }
+
+  request(url) {
+    // request and return promise
+  }
+}
+
+class HttpRequester {
+  constructor(adapter) {
+    this.adapter = adapter;
+  }
+
+  fetch(url) {
+    return this.adapter.request(url).then((response) => {
+      // transform response and return
+    });
+  }
+}
+```
+
+### 里氏替换原则
+子类不要去重写父类的方法
+
+**Bad:**
+```javascript
+class Rectangle {
+  constructor() {
+    this.width = 0;
+    this.height = 0;
+  }
+
+  setColor(color) {
+    // ...
+  }
+
+  render(area) {
+    // ...
+  }
+
+  setWidth(width) {
+    this.width = width;
+  }
+
+  setHeight(height) {
+    this.height = height;
+  }
+
+  getArea() {
+    return this.width * this.height;
+  }
+}
+
+class Square extends Rectangle {
+  setWidth(width) {
+    this.width = width;
+    this.height = width;
+  }
+
+  setHeight(height) {
+    this.width = height;
+    this.height = height;
+  }
+}
+
+function renderLargeRectangles(rectangles) {
+  rectangles.forEach((rectangle) => {
+    rectangle.setWidth(4);
+    rectangle.setHeight(5);
+    const area = rectangle.getArea(); // BAD: Returns 25 for Square. Should be 20.
+    rectangle.render(area);
+  });
+}
+
+const rectangles = [new Rectangle(), new Rectangle(), new Square()];
+renderLargeRectangles(rectangles);
+```
+
+**Good:**
+```javascript
+class Shape {
+  setColor(color) {
+    // ...
+  }
+
+  render(area) {
+    // ...
+  }
+}
+
+class Rectangle extends Shape {
+  constructor(width, height) {
+    super();
+    this.width = width;
+    this.height = height;
+  }
+
+  getArea() {
+    return this.width * this.height;
+  }
+}
+
+class Square extends Shape {
+  constructor(length) {
+    super();
+    this.length = length;
+  }
+
+  getArea() {
+    return this.length * this.length;
+  }
+}
+
+function renderLargeShapes(shapes) {
+  shapes.forEach((shape) => {
+    const area = shape.getArea();
+    shape.render(area);
+  });
+}
+
+const shapes = [new Rectangle(4, 5), new Rectangle(4, 5), new Square(5)];
+renderLargeShapes(shapes);
+```
+
+### 接口隔离原则
+接口最小化， 方便接口解藕
+
+**Bad:**
+```javascript
+class DOMTraverser {
+  constructor(settings) {
+    this.settings = settings;
+    this.setup();
+  }
+
+  setup() {
+    this.rootNode = this.settings.rootNode;
+    this.animationModule.setup();
+  }
+
+  traverse() {
+    // ...
+  }
+}
+
+const $ = new DOMTraverser({
+  rootNode: document.getElementsByTagName('body'),
+  animationModule() {} // Most of the time, we won't need to animate when traversing.
+  // ...
+});
+```
+
+**Good:**
+```javascript
+class DOMTraverser {
+  constructor(settings) {
+    this.settings = settings;
+    this.options = settings.options;
+    this.setup();
+  }
+
+  setup() {
+    this.rootNode = this.settings.rootNode;
+    this.setupOptions();
+  }
+
+  setupOptions() {
+    if (this.options.animationModule) {
+      // ...
+    }
+  }
+
+  traverse() {
+    // ...
+  }
+}
+
+const $ = new DOMTraverser({
+  rootNode: document.getElementsByTagName('body'),
+  options: {
+    animationModule() {}
+  }
+});
+```
+
+### 依赖反转原则
+高层次模块不能依赖低层次模块，它们依赖于抽象接口。
+抽象接口不能依赖具体实现，具体实现依赖抽象接口。
+总结下来就两个字，解耦。
+
+**Bad:**
+```javascript
+class InventoryRequester {
+  constructor() {
+    this.REQ_METHODS = ['HTTP'];
+  }
+
+  requestItem(item) {
+    // ...
+  }
+}
+
+class InventoryTracker {
+  constructor(items) {
+    this.items = items;
+    this.requester = new InventoryRequester();
+  }
+
+  requestItems() {
+    this.items.forEach((item) => {
+      this.requester.requestItem(item);
+    });
+  }
+}
+
+const inventoryTracker = new InventoryTracker(['apples', 'bananas']);
+inventoryTracker.requestItems();
+```
+
+**Good:**
+```javascript
+class InventoryTracker {
+  constructor(items, requester) {
+    this.items = items;
+    this.requester = requester;
+  }
+
+  requestItems() {
+    this.items.forEach((item) => {
+      this.requester.requestItem(item);
+    });
+  }
+}
+
+class InventoryRequesterV1 {
+  constructor() {
+    this.REQ_METHODS = ['HTTP'];
+  }
+
+  requestItem(item) {
+    // ...
+  }
+}
+
+class InventoryRequesterV2 {
+  constructor() {
+    this.REQ_METHODS = ['WS'];
+  }
+
+  requestItem(item) {
+    // ...
+  }
+}
+
+const inventoryTracker = new InventoryTracker(['apples', 'bananas'], new InventoryRequesterV2());
+inventoryTracker.requestItems();
+```
+
+## 测试
+### 单一化
+
+**Bad:**
+```javascript
+import assert from 'assert';
+
+describe('MakeMomentJSGreatAgain', () => {
+  it('handles date boundaries', () => {
+    let date;
+
+    date = new MakeMomentJSGreatAgain('1/1/2015');
+    date.addDays(30);
+    assert.equal('1/31/2015', date);
+
+    date = new MakeMomentJSGreatAgain('2/1/2016');
+    date.addDays(28);
+    assert.equal('02/29/2016', date);
+
+    date = new MakeMomentJSGreatAgain('2/1/2015');
+    date.addDays(28);
+    assert.equal('03/01/2015', date);
+  });
+});
+```
+
+**Good:**
+```javascript
+import assert from 'assert';
+
+describe('MakeMomentJSGreatAgain', () => {
+  it('handles 30-day months', () => {
+    const date = new MakeMomentJSGreatAgain('1/1/2015');
+    date.addDays(30);
+    assert.equal('1/31/2015', date);
+  });
+
+  it('handles leap year', () => {
+    const date = new MakeMomentJSGreatAgain('2/1/2016');
+    date.addDays(28);
+    assert.equal('02/29/2016', date);
+  });
+
+  it('handles non-leap year', () => {
+    const date = new MakeMomentJSGreatAgain('2/1/2015');
+    date.addDays(28);
+    assert.equal('03/01/2015', date);
+  });
+});
+```
+
+## 异步
+
+### 选择Promise 放弃回调
+**Bad:**
+```javascript
+import { get } from 'request';
+import { writeFile } from 'fs';
+get('https://en.wikipedia.org/wiki/Robert_Cecil_Martin', (requestErr, response) => {
+  if (requestErr) {
+    console.error(requestErr);
+  } else {
+    writeFile('article.html', response.body, (writeErr) => {
+      if (writeErr) {
+        console.error(writeErr);
+      } else {
+        console.log('File written');
+      }
+    });
+  }
+});
+```
+
+**Good:**
+```javascript
+import { get } from 'request';
+import { writeFile } from 'fs';
+get('https://en.wikipedia.org/wiki/Robert_Cecil_Martin')
+  .then((response) => {
+    return writeFile('article.html', response);
+  })
+  .then(() => {
+    console.log('File writeFile');
+  })
+  .catch((error) => {
+    console.log(error);
+  });
+```
+
+### 优先使用Async/Await 而非Promises
+**Bad:**
+```javascript
+import { get } from 'request';
+import { writeFile } from 'fs';
+get('https://en.wikipedia.org/wiki/Robert_Cecil_Martin')
+  .then((response) => {
+    return writeFile('article.html', response);
+  })
+  .then(() => {
+    console.log('File writeFile');
+  })
+  .catch((error) => {
+    console.log(error);
+  });
+```
+
+**Good:**
+```javascript
+import { get } from 'request';
+import { writeFile } from 'fs';
+async function getCleanCodeArticle() {
+  try {
+    const response = await get('https://en.wikipedia.org/wiki/Robert_Cecil_Martin');
+    await writeFile('article.html', response);
+    console.log('File written');
+  } catch(err) {
+    console.log(err);
+  }
+}
+```
+
+### 错误处理
+不要忽略抛出异常
+**Bad:**
+```javascript
+try {
+  functionThatMightThrow();
+} catch (error) {
+  console.log(error);
+}
+```
+
+**Good:**
+```javascript
+try {
+  functionThatMightThrow();
+} catch (error) {
+  // 这一种选择，比起 console.log 更直观
+  console.error(error);
+  // 也可以在界面上提醒用户
+  notifyUserOfError(error);
+  // 也可以把异常传回服务器
+  reportErrorToService(error);
+  // 其他的自定义方法
+}
+```
+
+### Promises 中也要抛异常
+**Bad:**
+```javascript
+getdata()
+  .then((data) => {
+    functionThatMightThrow(data);
+  })
+  .catch((error) => {
+    console.log(error);
+  });
+```
+
+**Good:**
+```javascript
+getdata()
+  .then((data) => {
+    functionThatMightThrow(data);
+  })
+  .catch((error) => {
+    // 这一种选择，比起 console.log 更直观
+    console.error(error);
+    // 也可以在界面上提醒用户
+    notifyUserOfError(error);
+    // 也可以把异常传回服务器
+    reportErrorToService(error);
+    // 其他的自定义方法
+  });
+```
+
+## 代码风格
+
+### 常量大写
+**Good:**
+```javascript
+const DAYS_IN_WEEK = 7;
+const daysInMonth = 30;
+
+const songs = ['Back In Black', 'Stairway to Heaven', 'Hey Jude'];
+const Artists = ['ACDC', 'Led Zeppelin', 'The Beatles'];
+
+function eraseDatabase() {}
+function restore_database() {}
+
+class animal {}
+class Alpaca {}
+```
+
+**Good:**
+```javascript
+const DAYS_IN_WEEK = 7;
+const DAYS_IN_MONTH = 30;
+
+const SONGS = ['Back In Black', 'Stairway to Heaven', 'Hey Jude'];
+const ARTISTS = ['ACDC', 'Led Zeppelin', 'The Beatles'];
+
+function eraseDatabase() {}
+function restoreDatabase() {}
+
+class Animal {}
+class Alpaca {}
+```
+
+### 先声明后调用
+方便只上而下的阅读习惯
+
+**Bad:**
+```javascript
+class PerformanceReview {
+  constructor(employee) {
+    this.employee = employee;
+  }
+
+  lookupPeers() {
+    return db.lookup(this.employee, 'peers');
+  }
+
+  lookupManager() {
+    return db.lookup(this.employee, 'manager');
+  }
+
+  getPeerReviews() {
+    const peers = this.lookupPeers();
+    // ...
+  }
+
+  perfReview() {
+    this.getPeerReviews();
+    this.getManagerReview();
+    this.getSelfReview();
+  }
+
+  getManagerReview() {
+    const manager = this.lookupManager();
+  }
+
+  getSelfReview() {
+    // ...
+  }
+}
+
+const review = new PerformanceReview(employee);
+review.perfReview();
+```
+
+**Good:**
+```javascript
+class PerformanceReview {
+  constructor(employee) {
+    this.employee = employee;
+  }
+
+  perfReview() {
+    this.getPeerReviews();
+    this.getManagerReview();
+    this.getSelfReview();
+  }
+
+  getPeerReviews() {
+    const peers = this.lookupPeers();
+    // ...
+  }
+
+  lookupPeers() {
+    return db.lookup(this.employee, 'peers');
+  }
+
+  getManagerReview() {
+    const manager = this.lookupManager();
+  }
+
+  lookupManager() {
+    return db.lookup(this.employee, 'manager');
+  }
+
+  getSelfReview() {
+    // ...
+  }
+}
+
+const review = new PerformanceReview(employee);
+review.perfReview();
+```
+
+## 注释
+
+### 只有业务逻辑需要注释
+评论是解释，不是要求。好的代码主要是文档本身。
+**Bad**
+```javascript
+function hashIt(data) {
+  // The hash
+  let hash = 0;
+
+  // Length of string
+  const length = data.length;
+
+  // Loop through every character in data
+  for (let i = 0; i < length; i++) {
+    // Get character code.
+    const char = data.charCodeAt(i);
+    // Make the hash
+    hash = ((hash << 5) - hash) + char;
+    // Convert to 32-bit integer
+    hash &= hash;
+  }
+}
+```
+
+**Good:**
+```javascript
+function hashIt(data) {
+  let hash = 0;
+  const length = data.length;
+
+  for (let i = 0; i < length; i++) {
+    const char = data.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+
+    // Convert to 32-bit integer
+    hash &= hash;
+  }
+}
+```
+
+### 删除注释代码
+版本控制可以找到旧代码，放心删除注释代码
+**Bad:**
+```javascript
+doStuff();
+// doOtherStuff();
+// doSomeMoreStuff();
+// doSoMuchStuff();
+```
+
+**Good:**
+```javascript
+doStuff();
+```
+
+### 不需要记日历
+git log 可以帮助你干
+**Bad:**
+```javascript
+/**
+ * 2016-12-20: Removed monads, didn't understand them (RM)
+ * 2016-10-01: Improved using special monads (JP)
+ * 2016-02-03: Removed type-checking (LI)
+ * 2015-03-14: Added combine with type-checking (JR)
+ */
+function combine(a, b) {
+  return a + b;
+}
+```
+
+**Good:**
+```javascript
+function combine(a, b) {
+  return a + b;
+}
+```
+
+### 注释不需要高亮
+**Bad:**
+```javascript
+////////////////////////////////////////////////////////////////////////////////
+// Scope Model Instantiation
+////////////////////////////////////////////////////////////////////////////////
+$scope.model = {
+  menu: 'foo',
+  nav: 'bar'
+};
+
+////////////////////////////////////////////////////////////////////////////////
+// Action setup
+////////////////////////////////////////////////////////////////////////////////
+const actions = function() {
+  // ...
+};
+```
+
+**Good:**
+```javascript
+$scope.model = {
+  menu: 'foo',
+  nav: 'bar'
+};
+
+const actions = function() {
+  // ...
+};
+```
+
+## ref
+翻译 [ryanmcdermott](https://github.com/ryanmcdermott) 的 [clean-code-javascript](https://github.com/ryanmcdermott/clean-code-javascript)
