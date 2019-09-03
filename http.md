@@ -111,6 +111,113 @@ Window Size: 还能接收多少字节,用于流量控制
 
   **6.HTTP/3**
     - 底层协议是基于UDP协议的, 具有纠错机制, 传送时添加一个校验包, 出现丢包可以通过校验包来推算出来
+　
+## 模块化
 
 
+## 支付相关
+  微信H5支付, 传入后端paymentData 中redirect 重定向, 微信支付调起收银台后超过五秒后就会跳转, 此时如果跳转到支付结果页是不好的。
 
+## 浏览器缓存机制
+**1、缓存位置**
+  1. service worker: 传输协议为HTTPS, 独立线程
+  2. memory cache: 内存中的缓存, 持续性很短, 随着tab进程的释放而释放
+  3. disk cache: 硬盘中的缓存
+  4. push cache: 以上都没有才走这个, 只在session 会话中才用到
+  5. 网络请求 
+
+**2、缓存策略**
+  *强缓存*
+  1. expires: 受限于本地时间, 不会发起请求
+  2. cache-control: max-age:设置过期时间、no-store: 不缓存、no-cache: 被缓存但是立即失效, 下次请求要验证缓存
+
+  *协商缓存*
+    1. last-modified: 最后的修改时间
+    2. ETag 类似文件指纹
+
+## 跨域
+  **1、什么叫跨域**
+    浏览器不能执行其他网站的脚本, 这是由于浏览器的同源策略导致的
+    即: 域名、协议、端口均相同
+  
+  **2、为什么要引入同源策略**
+  *同源策略限制了以下:*
+  - Cookie、LocalStorage、indexedDB等存储性质内容;主要是用来防止CSRF攻击, 利用用户登录状态发起攻击 
+  - 限制DOM查询
+  - 限制ajax 请求
+  *被允许的标签*
+    `<img src="xxx">`
+    `<link href="xxx">`
+    `<script src="xxx">`
+
+  **3实现跨域的方式**
+    1. JSONP
+      动态的创建script标签利用callback函数响应参数
+      缺点: 1. 只能get请求, xss攻击跨站脚本攻击
+    
+    2. Cors 跨域资源共享
+      最常用的方法, 需要浏览器和服务器都支持,, IE10及以上 
+      *在服务器设置*
+      - Access-Control-Allow-Origin: 设置那个源可以访问, * 表示任意域名
+      - Access-Control-Allow-Credentials: 布尔值, 表示是否接受cookie
+      - Access-Control-Allow-Methods: 允许那些方法
+      - Access-Control-Max-Age: 预检测, 存活时间 毫秒单位
+
+      *Content-type类型*
+      - text/plain
+      - multipart/form-data: 表单上传文件
+      - application/x-www-form-urlencoded: 浏览器原生form表单
+      - application/json: 序列化后的json字符串, 复杂请求, 需要走预检测 `option`请求方式
+
+    3. document.domain
+      适用于主域相同, 不同子域之间的跨域, 设置相同主域, 使检测通过
+      ```js
+      // a.abc.com
+      // b.abc.com
+      document.domain = 'abc.com';
+      ```
+    4. postMessage
+      完全不同的跨域, HTML5引入的, 适用于多窗口间的跨页面通讯, IE11及以上
+      otherWindow.postMessage(message, targetOrigin, [transfer])
+      安全性: 通过event.origin来判断是否是正确的发送方
+    
+    5. windowName
+      name值在不同的域名下加载后依旧存在, size2MB左右,
+      通过iframe的src属性由外域传向本域
+    
+    6. location.hash
+      iframe通过hash值来传递,
+
+    7. websocket
+      HTML5的持久化协议, 利用Http协议建立连接, 建立好就与http无关了
+
+    8. nginx
+      利用nginx转发请求
+    
+    9. node
+      中间间代理
+
+    10. webpack的devServer.proxy
+      target, 指定路径
+
+## 安全
+  **XSS攻击**
+  代码注入的一种攻击方式
+  1. 在一些输入框直接输入恶意代码, 前端没有过滤直接存入数据库
+  2. url 获取的参数, 使用都需要
+  
+  
+
+
+## 小程序
+**1、小程序生命周期**
+  - onLoad: 页面加载
+  - onReady: 页面初次渲染完成
+  - onShow: 页面显示
+  - onHide: 页面隐藏
+  - onUnload: 页面卸载
+  - onPullDownRefresh: 监听用户下拉动作
+  - onReachBottom: 下拉到底部
+  - onShareAppMessage: 点击右上角分享
+  - onPageScroll: 页面滚动
+  - onTabltemTap: 点击tab

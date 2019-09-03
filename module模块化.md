@@ -207,3 +207,44 @@
 **webpack**
 Babel 将 ES6转为 CommonJs 后, webpack 会将其包裹注入
 `module`、 `exports`、`require`z这些变量。
+
+
+
+
+## 模块化
+**定义**
+实现特定功能的相互独立的一组方法
+
+
+**模块化优点**
+  - 解决命名冲突
+  - 提高复用性
+  - 提高代码可维护性
+
+**1、立即执行函数(闭包)**
+
+**2、AMD和CMD**
+AMD: 提倡依赖前置, 在定义模块的时候就要声明其依赖的模块
+```js
+define(['./a', './b'], function(a, b) {
+  // todo
+})
+```
+
+CMD: 提倡就近依赖(按需加载), 在需要用到的时候再去require
+```js
+define(['./a'], function(a) {
+  var b = require('./b');
+  // todo
+})
+```
+
+**3、CommonJS**
+目前在node 和 webpack 比较常见
+每个JS文件独立存储它的模块, 像闭包一样, 
+module.exports导出模块, require 引入模块
+
+**4、Module**
+ES6的解决方案
+export用于导出, import 引入模块, export default 默认导出模块
+

@@ -23,10 +23,10 @@
 
 4. loader 和 plugin的区别?
   作用上: 
-    Loader模块加载器, Webpack 将一切文件视为模块, 但是webpack原生只能解析js文件, 如果要将其他的文件打包解析就要用到loader; Loader的作用: 让webpack拥有加载和解析非javascript文件的能力。
-    Plugin插件, Plugin 可以扩展webpack的功能,让webpack具有更多的灵活性。 webpack运行生命周期中会广播事件, Plugin 监听这些事件, 从打包优化到代码压缩,一直到重新定义环境变量,来改变webpack的输出结果。
+    - Loader模块加载器, Webpack 将一切文件视为模块, 但是webpack原生只能解析js文件, 如果要将其他的文件打包解析就要用到loader; Loader的作用: 让webpack拥有加载和解析非javascript文件的能力。
+    - Plugin插件, Plugin 可以扩展webpack的功能,让webpack具有更多的灵活性。 webpack运行生命周期中会广播事件, Plugin 监听这些事件, 从打包优化到代码压缩,一直到重新定义环境变量,来改变webpack的输出结果。
   用法上:
-    Loader: 在`module.rules` 中配置, 作为模块解析的规则而存在,类型为数组,每一项都是Object,test为加载什么类型文件,使用什么loader加载和使用的参数options
+    - Loader: 在`module.rules` 中配置, 作为模块解析的规则而存在,类型为数组,每一项都是- - Object,test为加载什么类型文件,使用什么loader加载和使用的参数options
     Plugin: 在plugins 中单独配置, 类型为数组, 每一项都是plugin的实例, 通过构造函数传入。
 
 5. webpack的构建流程, 从读取配置到文件输出?
