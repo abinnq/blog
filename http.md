@@ -161,7 +161,7 @@ Window Size: 还能接收多少字节,用于流量控制
       - Access-Control-Allow-Origin: 设置那个源可以访问, * 表示任意域名
       - Access-Control-Allow-Credentials: 布尔值, 表示是否接受cookie
       - Access-Control-Allow-Methods: 允许那些方法
-      - Access-Control-Max-Age: 预检测, 存活时间 毫秒单位
+      - Access-Control-Max-Age: 预检测, 存活时间 秒单位
 
       *Content-type类型*
       - text/plain
