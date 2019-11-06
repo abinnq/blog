@@ -228,6 +228,25 @@
   }
   ```
 
-## 10. 
+## 10. 函数声明与函数表达式
+javaScript定义函数有两种类型: 函数声明、函数表达式
 
+*函数声明*
+```js
+fn(); // success
+function fn() {} 
+```
+JavaScript 解释器中存在一种变量声明被提升的机制,
+函数声明会被提升到作用域的最前面
+
+*函数表达式*
+```js
+fn(); // error: fn is not a function
+var fn = function() {}
+
+//函数表达式是在运行时进行赋值即 
+//需要在赋值完成后才可以调用
+// var fn = undefined;
+// fn = function() {};
+```
   

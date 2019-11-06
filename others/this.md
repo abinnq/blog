@@ -81,3 +81,36 @@ o.__prototype = Person.prototype;
 Person.apply(o);
 person = o
 ```
+
+```js
+function Fn1() {
+  this.name = 1;
+}
+
+function Fn2() {
+  this.name = 1
+  return {
+    name: 2
+  }
+}
+
+console.log(new Fn1().name); // 1
+console.log(new Fn2().name); // 2
+console.log(Fn1().name); // error: prototype 'name' undefined
+console.log(Fn2().name); // 2
+```
+new 关键字会创建一个空对象, 然后调用apply方法显示 空对象的this指向将函数实例;
+如果 函数内部有返回且为对象, 那么this指向这个返回对象。
+
+*箭头函数*
+箭头函数不会创建自己的this, 它只会从自己的作用域链的上一层继承this
+```js
+var o = {
+  name: 1,
+  fn: () => {
+    console.log(this.name);
+  }
+}
+var name = 2;
+console.log(o.fn()); // 2
+```

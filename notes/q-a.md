@@ -70,9 +70,16 @@
       return {};
     }
 
-    console.log(new F1().name); // 'f1'
+    // 'f1': new 的关键字会改变this的指向其构造函数
+    console.log(new F1().name);
+
+    // F1()函数的运行返回是undefined, 取undefined.name
     console.log(F1().name); // error: property 'name' undefined
-    console.log(new F2().name); // undefined 
+
+    // undefined: 构造函数内有return 对象, this会指向这个对象
+    console.log(new F2().name);
+     
+    // F2的运行结果, 获取的是F2()的运行结果{}.name 得到undefined
     console.log(F2().name); //undefined
   ```
 7. 写一个函数将字符串 "get-computed-style" 转成小驼峰;
