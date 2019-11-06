@@ -1,9 +1,8 @@
-var s = "get-element-by-id"
-function upperCase(str) {
-  return str.replace(/-\w/g, function(x){
-    // return x.slice(1).toUpperCase();
-    console.log(x.slice(1))
-    return x
-  })
-}
-console.log(upperCase(s))
+fn1()
+function fn1() {}
+fn1()
+
+console.log(fn2)
+fn2()
+var fn2 = function() {}
+fn2()
