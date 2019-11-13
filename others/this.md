@@ -114,3 +114,102 @@ var o = {
 var name = 2;
 console.log(o.fn()); // 2
 ```
+
+
+
+### this
+*this的确定只需要在一个函数中确定*
+
+1. this 指向调用他的那个对象
+```js
+
+```
+
+2. Function调用, `fn()` 这里的fn作为单独的变量出现, 而不是属性, this 指向`window`
+全局作用域下, 调用这个this, 一直指向global, 浏览器window
+```js
+var fn = function() {
+  console.log(this);
+}
+fn(); // window
+// fn(); 等同于 window.fn()
+```
+
+3. 被调用的对象作为一个属性出现, 带有`.`或`[]`这样的关键字,
+  this指向调用前的那个对象,即`.`或`[`前的对象
+```js
+var bar = {
+  name: 'b',
+  fn: function() {
+    console.log(this.name)
+  }
+}
+var name = 'a'
+bar.fn(); // 'b'
+```
+
+4. new 关键字
+this 指向其构造函数, 如果构造函数返回是一个对象, this则指向这个对象
+*new 实现原理*
+```js
+// function Person() {}
+// var person = new Person();
+var obj = Object.create();
+obj.__proto__ = Person.prototype;
+var result = Person.apply(obj);
+person = (typeof result === 'object' && result !== null) ? result : obj;
+// 1. 创建一个空对象obj
+// 2. 将空对象obj的原型链接到 构造函数的prototype即实例原型
+// 3. 执行构造函数, 将构造函数的this指向创建的obj
+// 4. 如果构造函数返回一个对象, 则返回这个对象, 否则返回obj
+```
+
+
+```js
+function Fn() {
+  this.name = 'f';
+}
+var a = new Fn();
+console.log(a.name); // f
+
+var b = new Fn // 这种仅仅是不能传参
+console.log(b); // f 
+```
+
+```js
+function Fn() {
+	this.name = 'f'
+	return {name: 'r'}
+}
+var c = new Fn();
+console.log(c.name); // r
+```
+
+```js
+function Fn() {
+	this.name = 'f'
+	return null;
+}
+var d = new Fn();
+console.log(d.name); //  f
+```
+
+5. 显示绑定 apply、call、bind
+  `Function.prototype`: 第一个参数都是this要指向的对象
+  - apply 第二个参数是个伪数组
+  - call 第二个及以后是依次传递参数
+  - bind: 返回一个函数, 需要主动调用, 传参可以放在bind 方法第二个参数依次传递, 也可以在执行时依次传递
+```js
+function fn(b, c) {
+  console.log(this.a, b, c);
+}
+var bar = {
+  a: 1
+}
+fn.apply(bar, [2, 3]);
+fn.call(bar, 2, 3);
+fn.bind(bar, 2, 3)();
+fn.bind(bar)(2, 3);
+// 上面均打印 1 2 3
+```
+
