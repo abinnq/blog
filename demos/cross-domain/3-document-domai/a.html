@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>aaa</title>
+</head>
+<body>
+  aaa
+  <iframe id="myIframe" src="http://b.abin.com:3000/b.html"></iframe>
+  
+  <script>
+  // 127.0.0.1 a.abin.com
+  // 127.0.0.1 b.abin.com
+  document.domain = 'abin.com';
+  const myIframe = document.getElementById('myIframe');
+  myIframe.onload = function() {
+    console.log(myIframe.contentWindow.data);
+  }
+  </script>
+</body>
+</html>

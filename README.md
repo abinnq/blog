@@ -9,3 +9,4 @@
 
 1. [promise/A+实现](https://github.com/abinnq/blog/issues/4)
 2. [JavaScript代码简洁之道](https://github.com/abinnq/blog/issues/5)
+3. [实现跨域的几种方式](https://github.com/abinnq/blog/issues/6)

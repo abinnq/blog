@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+</head>
+<body>
+  <script>
+    function jsonp({url, params, cb}) {
+      return new Promise((resolve, reject) => {
+        let script = document.createElement('script');
+        window[cb] = function(data) {
+          delete window[cb];
+          document.body.removeChild(script);
+          if(data) {
+            resolve(data);
+          } else {
+            reject('暂无数据返回');
+          }
+        }
+        params = {...params, cb}; // cb合并进参数
+        let queryList = Object.entries(params).map(([key, value]) => `${key}=${value}`);
+        const fullUrl = `${url}?${queryList.join('&')}`;
+        script.src = fullUrl;
+        script.addEventListener('error', () => {
+          delete window[cb];
+          document.body.removeChild(script);
+          reject('资源加载失败');
+        })
+        document.body.appendChild(script); 
+      })
+    }
+    let url1 = 'https://sp0.baidu.com/5a1Fazu8AA54nxGko9WTAnF6hhy/su';
+    let url2 = 'http://localhost:3000/say';
+    jsonp({
+      url: url2,
+      params: {wd: 'a'},
+      cb: 'show',
+    }).then((data) => {
+      console.log(data);
+    }, (err) => {
+      console.error(err);
+    });
+  </script>
+</body>
+</html>

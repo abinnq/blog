@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>aaa</title>
+</head>
+<body>
+  aaa
+  <script>
+  let reqMethods = 'POST';
+  let reqUrl = 'http://localhost:4000/getData';
+  let xhr = new XMLHttpRequest;
+  xhr.open(reqMethods, reqUrl, true);
+  xhr.setRequestHeader('name', 'abin')
+  xhr.setRequestHeader("content-type", "application/json");
+  xhr.onreadystatechange = function() {
+    if(xhr.readyState === 4) {
+      if(xhr.status >=200 && xhr.status < 300 || xhr === 304) {
+        console.log('aaa', xhr.response);
+      }
+    }
+  }
+  let data = {name: 'aaaa'};
+  xhr.send(data);
+  </script>
+</body>
+</html>

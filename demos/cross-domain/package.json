@@ -1,0 +1,11 @@
+{
+  "name": "cross-domain",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "devDependencies": {
+    "express": "^4.17.1",
+    "http": "^0.0.0",
+    "ws": "^7.2.0"
+  }
+}

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>aaa</title>
+</head>
+<body>
+  aaa
+  <iframe id="myIframe" src="http://localhost:4000/b.html"></iframe>
+  <script>
+    window.onload = function() {
+      let bUrl = 'http://localhost:4000';
+      let myIframe = document.getElementById('myIframe');
+      // 向目标源发送数据
+      // contentWindow 返回<iframe>元素的Window对象 权限为只读
+      myIframe.contentWindow.postMessage({name: 'a'}, bUrl);
+    }
+
+    // 监听数据返回
+    window.addEventListener('message', function(e) {
+      console.log('aaa', e);
+    })
+  </script>
+</body>
+</html>
