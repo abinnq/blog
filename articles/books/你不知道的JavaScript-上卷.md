@@ -173,3 +173,122 @@ setTimeout(function() {
 将文件作为独立的模块来处理, 每个模块都可以导入其他模块或者特定的API成员, 同时也可以导出自己的的API成员。
 
 ## 第二部分 this和对象原型
+
+### 第一章 关于this
+
+**词法作用域**
+也被称为静态作用域
+JavaScript作用域是词法作用域, 作用域是由写代码时确定的, 更关注函数在何处声明。
+
+**动态作用域**
+JavaScript的this机制很像动态作用域, 在代码运行时确定的, 更关注函数从何处调用。
+
+**this**
+函数被调用时会创建一个执行上下文, 包括函数的调用栈、调用方式、入参等信息, this就是记录这个的属性
+this是在函数被调用时发生的绑定, 它指向什么取决于函数在哪里调用。
+
+### 第二章 this全面解析
+- 默认绑定: 不带任何修饰符的函数引起的调用
+- 隐式绑定: 调用位置是否有上下文,或者说 被某个对象拥有或包含。隐式丢失: 通常发生在对象赋值的情况。
+
+**默认绑定**
+> 不带任何修饰符的函数引起的调用
+此时的this 指向全局对象global, 浏览器环境是window
+严格模式下,this 会绑定到undefined
+```js
+// 默认绑定下, this指向全局对象
+function foo() {
+  console.log(this.a);
+}
+var a = 'global';
+foo(); // 'global'
+```
+
+```js
+// 严格模式下, this会绑定到undefined
+function foo() {
+  'use strict'
+  console.log(this.a);
+}
+var a = 'global';
+foo(); // TypeError: this.a is undefined
+```
+
+**隐式绑定**
+> 当函数引用有上下文时,隐式绑定规则会把函数调用的this绑定到这个上下文
+
+```js
+// this 指向函数引用的上下文
+function foo() {
+  console.log(this.a);
+}
+var obj = {
+  a: 1,
+  foo: foo,
+}
+obj.foo(); // 1
+```
+
+```js
+// 对象属性引用链中, 仅有上一层在调用位置中起作用
+function foo() {
+  console.log(this.a);
+}
+var obj1 = {
+  a: 1,
+  obj2: {
+    a: 2,
+    foo:foo,
+  }
+}
+obj1.obj2.foo(); // 2
+```
+
+*隐式丢失*
+通常发生在对象赋值的情况下
+
+```js
+// bar引用的是foo函数本身, 调用是不带任何修饰符的, 也就是默认绑定到全局对象global
+var obj = {
+ a: 1,
+ foo: function() {
+   console.log(this.a);
+ } 
+}
+var a = 'global';
+var bar = obj.foo;
+bar(); // 'global'
+```
+
+```js
+// 参数传递是按值传递的, 传入函数时被隐式赋值,结果和上一个一样
+var obj = {
+ a: 1,
+ foo: function() {
+   console.log(this.a);
+ } 
+}
+function doFoo(fn) {
+  fn();
+}
+var a = 'global';
+doFoo(obj.foo); // 'global'
+```
+
+```js
+// 内置函数也是一样的, 隐式丢失走了 默认绑定
+var obj = {
+ a: 1,
+ foo: function() {
+   console.log(this.a);
+ } 
+}
+var a = 'global';
+setTimeout(obj.foo, 100); // 'global'
+```
+
+**显式绑定**
+
+**new 绑定**
+
+**箭头函数**
