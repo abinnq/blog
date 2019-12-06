@@ -289,6 +289,26 @@ setTimeout(obj.foo, 100); // 'global'
 
 **显式绑定**
 
+*用法回顾*
+```js
+function foo(b, c){
+  console.log(this.a, b, c);
+}
+var bar = {
+  a: 1
+}
+foo.apply(bar, [2, 3]); // 1 2 3
+foo.call(bar, 2, 3); // 1 2 3
+foo.bind(bar, 2, 3)(); // 1 2 3
+foo.bind(bar)(2, 3); // 1 2 3
+```
+- apply: 第二个参数是一个arguments
+- call: 第二个及以后是依次传递
+- bind: 返回一个函数,需要主动调用, 参数可以放在bind 第二个及以后, 也可以放在调用函数里
+
+
+
+
 **new 绑定**
 
 **箭头函数**
