@@ -301,14 +301,39 @@ foo.apply(bar, [2, 3]); // 1 2 3
 foo.call(bar, 2, 3); // 1 2 3
 foo.bind(bar, 2, 3)(); // 1 2 3
 foo.bind(bar)(2, 3); // 1 2 3
+foo.bind(bar, 2)(3); // 1 2 3
 ```
 - apply: 第二个参数是一个arguments
 - call: 第二个及以后是依次传递
 - bind: 返回一个函数,需要主动调用, 参数可以放在bind 第二个及以后, 也可以放在调用函数里
+*注意*
+all、apply非严格模式下第一个参数:
+- 指定`null`或`undefined`时会指向全局对象。原始值会被包装。
+- 即`func.call(2) -> new Number(2)`
 
-
-
+bind
+- 如果使用`new`运算符构造绑定函数, 则使用new 绑定
+- 当bind在setTimeout中创建一个函数,thisArg 是原始值 都将转换为`object`
 
 **new 绑定**
 
+```js
+// function Person() {};
+// var person = new person();
+var obj = Object.create();
+obj.__proto__ = Person.prototype;
+var result = Person.call(obj);
+person = (typeof result === 'object' && result !== null) ? result : obj;
+// 1. 创建一个空对象obj
+// 2. 将创建对象obj连接到构找函数原型
+// 3. 将函数内部this指向obj对象
+// 4. 如果构造函数返回是个对象, 则返回这个对象, 否则返回对象obj
+```
+
 **箭头函数**
+- 箭头函数没有自己的this, 他内部的this是作用域父级的this
+- 箭头函数没有prototype属性
+- 没有arguments对象, 同样是作用域父级的arguments
+- 不可以使用new 操作符, 还是因为没有prototype属性, 报错`TypeError: Foo is not a constructor`
+- 会忽略apply、call、bind的第一个参数
+
