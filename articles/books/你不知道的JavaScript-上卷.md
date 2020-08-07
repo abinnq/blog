@@ -337,3 +337,27 @@ person = (typeof result === 'object' && result !== null) ? result : obj;
 - 不可以使用new 操作符, 还是因为没有prototype属性, 报错`TypeError: Foo is not a constructor`
 - 会忽略apply、call、bind的第一个参数
 
+### 第三章 对象
+**对象定义语法**
+*声明形式* : `var myObj = {age: 18}`
+*构造函数* : `var myObj = new Object(); myObj.age = 18;` 
+
+**类型**
+*五种基本简单类型*
+- string
+- number
+- boolean
+- undefined
+- null (typeof null 时会返回'object')
+> 不同对象在底层都表示为二进制， 在JavaScript中二进制前三位都为0的会被判断为object类, null的二进制全部都是0， 自然前三位都是零， 故typeof null会返回'object'
+
+*内置对象*
+- String
+- Number
+- Boolean
+- Object
+- Function
+- Array
+- Date
+- RegExp
+- Error
